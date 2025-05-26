@@ -1,5 +1,5 @@
 """
-用于生成边界的子板图像
+Sub-board images for generating boundaries
 """
 from PIL import Image, ImageDraw
 import csv
@@ -11,9 +11,9 @@ def read_coordinates(filename):
 
     with open(filename, 'r') as file:
         for line in file:
-            # 从每一行中提取坐标信息
+            # Extract coordinate information from each line
             values = line.strip().split()
-            # 将字符串转换为浮点数并添加到坐标列表中
+            # Converts a string to a floating point number and adds it to the list of coordinates
             max_x, max_y, min_x, min_y = map(float, values)
             extreme_coordinates.append((max_x, max_y, min_x, min_y))
 
@@ -28,7 +28,7 @@ def point_in_range(point, range):
     return False
 
 
-# 缩放坐标到图像尺寸
+# Scaling coordinates to image size
 def scale_coord(x, y, m_in_sf):
     max_x, max_y, min_x, min_y = m_in_sf
     scaled_x = int((x - min_x) * width / (max_x - min_x))
@@ -40,37 +40,37 @@ def scale_coord(x, y, m_in_sf):
 for u in range(1,2):
     pad_file_path = r'data/surface.txt'
     sc_set = []
-    # 读取文件并提取以'A'开头的数据
+    # Read a file and extract data starting with 'A'
 
     sliding_scale = 1000
     line_size = 4
 
-    # 从coordinates.txt文件中读取坐标信息
+    # Reading coordinates from coordinates.txt file
     extreme_coordinates = read_coordinates('sfcoordinates.txt')
 
 
-    #圆弧数据
+    # Circular Arc Data
     arc_in_sfs = [[] for _ in extreme_coordinates]
     sc_arc_in_sfs = [[] for _ in extreme_coordinates]
 
-    #直线数据
+    # Linear data
     l_in_sfs = [[] for _ in extreme_coordinates]
     sc_l_in_sfs = [[] for _ in extreme_coordinates]
 
-    #pad数据
+    # pad data
     pad_in_sfs = [[] for _ in extreme_coordinates]
     sc_pad_in_sfs = [[] for _ in extreme_coordinates]
 
 
 
     arc_data = None
-    #多边形起点
+    # polygonal starting point
     start_point = None
     with open(pad_file_path, 'r') as file:
         for line in file:
             if line.startswith('A'):
-                arc_data = line.split()[1:7]  # 提取数据
-                arc_data = [float(x) for x in arc_data]  # 将数据转换为浮点数
+                arc_data = line.split()[1:7]  # Extract data
+                arc_data = [float(x) for x in arc_data]  # Convert data to floating point numbers
 
                 for i, extreme_coordinate in enumerate(extreme_coordinates):
                     if point_in_range([arc_data[0], arc_data[1]], extreme_coordinate):
@@ -88,9 +88,9 @@ for u in range(1,2):
                         sc_arc_in_sfs[i].append([x1, y1, x2, y2, x3, y3])
 
             if line.startswith('L'):
-                # 提取直线的起始坐标
-                coordinates = line.split()[1:5]  # 假设坐标是以空格分隔的，提取索引为1到4的元素
-                # 转换坐标为浮点数
+                # Extract the starting coordinates of the line
+                coordinates = line.split()[1:5]  
+                # Convert coordinates to floating point numbers
                 coordinates = [float(coord) for coord in coordinates]
 
                 for i, extreme_coordinate in enumerate(extreme_coordinates):
@@ -105,13 +105,12 @@ for u in range(1,2):
                         y1 = height - y1
                         y2 = height - y2
                         sc_l_in_sfs[i].append([x1, y1, x2, y2])
-                        # 检查行首字母是否为'P'
+
 
 
             if line.startswith('P'):
-                # 提取圆的坐标
-                coordinates = line.split()[1:3]  # 假设坐标是以空格分隔的，提取索引为1到2的元素
-                # 转换坐标为浮点数
+                # Extract the coordinates of the circle
+                coordinates = line.split()[1:3]  
                 coordinates = [float(coord) for coord in coordinates]
                 for i, extreme_coordinate in enumerate(extreme_coordinates):
                     if point_in_range([coordinates[0], coordinates[1]], extreme_coordinate):
@@ -121,7 +120,6 @@ for u in range(1,2):
                         x1, y1 = scale_coord(coordinates[0], coordinates[1], extreme_coordinate)
                         y1 = height - y1
                         sc_pad_in_sfs[i].append([x1, y1])
-                        # 检查行首字母是否为'P'
 
 
 
@@ -129,10 +127,8 @@ for u in range(1,2):
         for line in file:
             tokens = line.strip().split()
             if line.startswith('OB'):
-                # 多边形起点
                 start_point = (float(tokens[1]), float(tokens[2]))
             elif line.startswith('OS'):
-                # 线段
                 end_point = (float(tokens[1]), float(tokens[2]))
                 for i, extreme_coordinate in enumerate(extreme_coordinates):
                     if point_in_range(start_point, extreme_coordinate):
@@ -149,7 +145,6 @@ for u in range(1,2):
 
                 start_point = end_point
             elif line.startswith('OC'):
-                # 圆弧
                 end_point = (float(tokens[1]), float(tokens[2]))
                 center_point = (float(tokens[3]), float(tokens[4]))
                 for i, extreme_coordinate in enumerate(extreme_coordinates):
@@ -170,7 +165,7 @@ for u in range(1,2):
 
                 start_point = end_point
 
-    # 打印结果
+    # Print results
     em_datas = []
     for i, sc_arc_in_sf in enumerate(sc_arc_in_sfs):
         sc_l_in_sf = sc_l_in_sfs[i]
@@ -185,10 +180,8 @@ for u in range(1,2):
         image = Image.new("RGB", (width, height), "white")
         x = 0
         if x == 0:
-            # 创建一个绘图对象
             draw = ImageDraw.Draw(image)
 
-            #画弧
             for sc_arc in sc_arc_in_sf:
                 x1, y1, x2, y2, x3, y3 = sc_arc
 
@@ -214,26 +207,21 @@ for u in range(1,2):
 
             for sc_line in sc_l_in_sf:
                 x1, y1, x2, y2 = sc_line
-                # 在图像上绘制直线
                 draw.line([(x1, y1), (x2, y2)], fill="black", width=line_size)
 
 
             for sc_pad in sc_pad_in_sf:
                 x, y = sc_pad
-                # 计算圆的半径（这里假设半径为固定值）
-                radius = line_size  # 你可以根据需要调整半径的大小
-                # 在图像上绘制圆
+                radius = line_size  
                 draw.ellipse([(x - radius, y - radius), (x + radius, y + radius)], outline="black")
 
         image.save("data/image/data" + str(u) + "/output_" + str(i) +"x"+ ".png")
 
 
-    # 定义保存到文本文件的文件名
     file_name = "em_data.txt"
     em_datas = []
     max_num = 0
 
-    # 打开文件以写入模式
     for i, arc_in_sf in enumerate(arc_in_sfs):
         num = 0
         l_in_sf = l_in_sfs[i]
