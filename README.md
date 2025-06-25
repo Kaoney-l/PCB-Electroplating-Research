@@ -1,6 +1,6 @@
 # A-Deep-Reinforcement-Learning-Framework-for-Optimized-Dummy-Pad-Placement-in-PCB-Electroplating
 
-This repository contains the relevant raw data and code for generating the dataset.
+This is the dataset for our paper "Zhou Q, Li Y, Wang C, et al. A Deep Reinforcement Learning Framework for Optimized Dummy Pad Placement in PCB Electroplating[J]. Expert Systems with Applications, 2025: 128639."
 
 ---
 
